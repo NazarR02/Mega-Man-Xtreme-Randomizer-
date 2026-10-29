@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mega Man Xtreme Randomizer</title>
+    <link rel="stylesheet" href="css/style.css?v=full-progression-1" />
+  </head>
+  <body>
+    <div id="disclaimerOverlay" class="disclaimer-overlay" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
+      <section class="disclaimer-card">
+        <p class="eyebrow" data-i18n="disclaimerEyebrow"></p>
+        <h2 id="disclaimerTitle" data-i18n="disclaimerTitle"></h2>
+        <p data-i18n="disclaimerBody"></p>
+        <p data-i18n="disclaimerNoFiles"></p>
+        <button id="acceptDisclaimerButton" class="primary-button" type="button" data-i18n="acceptDisclaimer"></button>
+      </section>
+    </div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div><h1>Mega Man Xtreme Randomizer</h1></div>
+        <div class="topbar-meta">
+          <button id="languageToggle" class="language-toggle" type="button" data-i18n-title="languageToggleHelp"></button>
+          <div class="topbar-status">
+            <span id="romStatus" class="status-pill" data-i18n="romNotLoaded"></span>
+            <span id="validStatus" class="status-pill muted" data-i18n="noSeed"></span>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="control-panel" data-i18n-label="controlsLabel">
+          <section class="panel-section rom-panel">
+            <h2 data-i18n="gameFile"></h2>
+            <label class="file-drop" for="romFile" data-i18n-title="selectRomHelp">
+              <span class="file-drop-title" data-i18n="selectFile"></span>
+              <span id="fileName" class="file-drop-meta" data-i18n="loadRomHint"></span>
+            </label>
+            <input id="romFile" type="file" accept=".gb,.gbc,application/octet-stream" />
+            <p id="romPreparation" class="section-note" data-i18n="autoPatch"></p>
+          </section>
+
+          <section class="panel-section seed-panel">
+            <div class="seed-row">
+              <h2 data-i18n="reproducibleSeed"></h2>
+              <button id="seedButton" class="icon-button" type="button" data-i18n-title="applySeedHelp" data-i18n-label="applySeed">OK</button>
+            </div>
+            <label class="visually-hidden" for="seedInput" data-i18n="useExistingSeed"></label>
+            <textarea id="seedInput" class="text-input seed-textarea" spellcheck="false" data-i18n-placeholder="seedPlaceholder"></textarea>
+          </section>
+
+          <section class="panel-section options-panel">
+            <h2 data-i18n="options"></h2>
+            <label class="toggle-row"><input id="randomizeItems" type="checkbox" checked /><span><strong data-i18n="randomizeItems"></strong><small data-i18n="randomizeItemsHelp"></small></span></label>
+            <label class="toggle-row"><input id="randomizeCapsules" type="checkbox" checked /><span><strong data-i18n="randomizeArmor"></strong><small data-i18n="randomizeArmorHelp"></small></span></label>
+            <label class="toggle-row"><input id="randomizeBossRewards" type="checkbox" checked /><span><strong data-i18n="randomizeBossRewards"></strong><small data-i18n="randomizeBossRewardsHelp"></small></span></label>
+            <label class="toggle-row"><input id="randomizeBossWeaknesses" type="checkbox" /><span><strong data-i18n="randomizeBossWeaknesses"></strong><small data-i18n="randomizeBossWeaknessesHelp"></small></span></label>
+            <label class="toggle-row"><input id="lockBossAccess" type="checkbox" /><span><strong data-i18n="lockBossAccess"></strong><small data-i18n="lockBossAccessHelp"></small></span></label>
+            <label class="toggle-row"><input id="requireFullProgression" type="checkbox" /><span><strong data-i18n="requireFullProgression"></strong><small data-i18n="requireFullProgressionHelp"></small></span></label>
+            <label class="toggle-row"><input id="showItemTexts" type="checkbox" /><span><strong data-i18n="showItemTexts"></strong><small data-i18n="showItemTextsHelp"></small></span></label>
+            <label class="toggle-row"><input id="generateSpoilerLog" type="checkbox" checked /><span><strong data-i18n="generateSpoilerLog"></strong><small data-i18n="generateSpoilerLogHelp"></small></span></label>
+          </section>
+
+          <section class="panel-section starting-panel">
+            <h2 data-i18n="startingGear"></h2>
+            <div class="segmented-control" role="radiogroup" data-i18n-label="startingGear">
+              <label><input type="radio" name="startingGearMode" value="none" /><span data-i18n="noStartingGear"></span></label>
+              <label><input type="radio" name="startingGearMode" value="normal" checked /><span data-i18n="normal"></span></label>
+              <label><input type="radio" name="startingGearMode" value="generous" /><span data-i18n="generous"></span></label>
+              <label><input type="radio" name="startingGearMode" value="custom" /><span data-i18n="custom"></span></label>
+            </div>
+            <p id="startingGearHint" class="section-note"></p>
+            <div id="customStartingGear" class="custom-starting-gear" hidden></div>
+          </section>
+
+          <section class="panel-section action-panel" data-i18n-label="romActions">
+            <div class="action-row">
+              <button id="generateButton" class="primary-button" type="button" data-i18n="generateRom" data-i18n-title="generateRomHelp"></button>
+              <button id="downloadBpsButton" class="secondary-button bps-download-button" type="button" data-i18n="downloadBpsPatch" data-i18n-title="downloadBpsPatchHelp" disabled></button>
+              <a id="downloadLuaButton" class="secondary-button lua-download-button" href="bizhawk.zip" download="bizhawk.zip" data-i18n="downloadBizhawkLua" data-i18n-title="downloadBizhawkLuaHelp"></a>
+            </div>
+          </section>
+        </aside>
+
+        <section class="main-panel" aria-live="polite">
+          <section class="customization-panel">
+            <div class="section-heading">
+              <div><p class="eyebrow" data-i18n="customization"></p><h2 data-i18n="playerPalette"></h2></div>
+              <div class="palette-file-actions">
+                <button id="paletteHelpButton" class="palette-tool-button help-button" type="button" aria-expanded="false" data-i18n="help" data-i18n-title="paletteHelpButtonHelp"></button>
+                <button id="savePalettesButton" class="palette-tool-button" type="button" data-i18n="savePalettes" data-i18n-title="savePalettesHelp"></button>
+                <button id="loadPalettesButton" class="palette-tool-button" type="button" data-i18n="loadPalettes" data-i18n-title="loadPalettesHelp"></button>
+                <input id="paletteFileInput" type="file" accept=".txt,text/plain,application/json" hidden />
+              </div>
+            </div>
+            <aside id="paletteHelpPanel" class="palette-help-panel" hidden>
+              <strong data-i18n="paletteHelpTitle"></strong>
+              <ul>
+                <li data-i18n="paletteHelpTabs"></li>
+                <li data-i18n="paletteHelpBytes"></li>
+                <li data-i18n="paletteHelpPresets"></li>
+                <li data-i18n="paletteHelpFiles"></li>
+              </ul>
+            </aside>
+            <div id="messageBox" class="message-box" hidden></div>
+            <nav id="previewPaletteTabs" class="preview-palette-tabs" data-i18n-label="previewPalettes"></nav>
+
+            <div class="player-customization">
+              <section class="palette-editor-card">
+                <h3 id="paletteEditorTitle"></h3>
+                <div id="palettePresetControls">
+                  <label class="input-label" for="palettePreset" data-i18n="preset"></label>
+                  <select id="palettePreset" class="select-input" data-i18n-title="palettePresetHelp"></select>
+                </div>
+                <h3 data-i18n="byteValues"></h3>
+                <div id="playerPaletteInputs" class="palette-byte-grid"></div>
+              </section>
+              <div class="preview-area">
+                <div class="preview-grid">
+                  <figure><figcaption data-i18n="normalPreview"></figcaption><canvas id="characterCanvas" width="220" height="260"></canvas></figure>
+                  <figure><figcaption data-i18n="armorPreview"></figcaption><canvas id="armoredCharacterCanvas" width="220" height="260"></canvas></figure>
+                </div>
+                <div id="paletteSwatches" class="swatches preview-swatches" data-i18n-label="paletteColors"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <div id="toastBox" class="toast-bubble" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="js/main.js?v=boss-weakness-3"></script>
+  </body>
+</html>

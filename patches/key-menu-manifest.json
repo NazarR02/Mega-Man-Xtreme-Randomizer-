@@ -1,0 +1,64 @@
+{
+  "version": "randomizer patch v1.2 + subtank fix; optional item texts",
+  "itemTexts": {
+    "file": "randomizer patch v1.2 - item texts.bps",
+    "sourceSize": 1048576,
+    "targetSize": 2097152,
+    "sourceCrc": 978162901,
+    "targetCrc": 4192829045,
+    "patchCrc": 1519525264,
+    "actionsOffset": 11,
+    "footerOffset": 18641,
+    "patchSha256": "2ef3f95057177f16db9f98c4b14cd6c3fbd4e7c20a416d8fbf170f77e8aaab0c",
+    "targetRomSha256": "4a6c45a948389d7f73a3cec0cef2058ad2d713fa98948eee7aecdade3ca5b21f"
+  },
+  "sourceSize": 1048576,
+  "targetSize": 2097152,
+  "sourceCrc": 978162901,
+  "targetCrc": 3455307163,
+  "patchCrc": 2012709979,
+  "actionsOffset": 11,
+  "footerOffset": 18577,
+  "patchSha256": "73f2306c1504d537708118755b9ffbfe319e9668c5369ac1410095d5ad989ef8",
+  "targetRomSha256": "0cd0a1a0630c3047a6a9b288dc5ab51d6e4ba47e9cb6d8d461c9a78d16eac8b1",
+  "legacyPatchSha256": "0e9eb3e2f07d99597dc8da7fe6728f134b536e93502a7b86dbeec83b7256dd6e",
+  "bankSha256": "73da06a291d14e2fcf155a83653ec0d8ac85f62a36f4131aba2c2f7ffe7dc7e7",
+  "spriteSources": {
+    "size": [
+      16,
+      24
+    ],
+    "iconSize": [
+      16,
+      16
+    ],
+    "verticalOffset": 4,
+    "groups": [
+      "key-accent-1",
+      "key-accent-2",
+      "key-missing",
+      "sigma-1-blue",
+      "sigma-2-blue",
+      "sigma-missing"
+    ],
+    "sourceHashes": {
+      "keys.png": "f508b8f0051b97d16f12f606ecc60a1ee27a2405630b7cf9b059c9135431da5f",
+      "sigma_menu.png": "4cf66780fb45c16a74e249de1ee359426503dab9517ff0ac6b80ed5efedfcf65"
+    },
+    "keyPaletteRoles": {
+      "0": 0,
+      "1": 0,
+      "2": 3,
+      "3": 1
+    },
+    "sigmaPaletteRoles": {
+      "0": 0,
+      "1": 1,
+      "2": 3,
+      "3": 2
+    },
+    "keyFrameRemoved": false,
+    "keyStyle": "black menu button; native palette 7 black, white and blue",
+    "sigmaDesign": "original indexed sigma_menu.png; both use the blue-primary right-hand variant"
+  }
+}

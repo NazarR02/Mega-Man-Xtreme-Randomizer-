@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mega Man Xtreme Randomizer Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #101820;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: start center;
+      padding: 16px;
+    }
+
+    .tracker {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      image-rendering: pixelated;
+      overflow: hidden;
+      background: #1b93dc;
+    }
+
+    .tracker img,
+    .piece,
+    .dim,
+    .off-item {
+      position: absolute;
+      image-rendering: pixelated;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .base {
+      inset: 0;
+      width: 500px;
+      height: 500px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .dim {
+      background: rgb(0, 0, 0);
+      border: 1px solid rgb(0, 6, 97);
+      mix-blend-mode: color;
+    }
+
+    .zero-dim {
+      background: rgb(8, 73, 88);
+      border: 1px solid rgb(8, 73, 88);
+      mix-blend-mode: normal;
+    }
+
+    .off-item {
+      object-fit: contain;
+    }
+
+    .notification {
+      position: absolute;
+      left: 5px;
+      right: 14px;
+      bottom: 7px;
+      height: 30px;
+      display: flex;
+      align-items: left;
+      justify-content: left;
+      gap: 8px;
+      padding: 0 8px;
+      color: #fff;
+      background: transparent;
+      border: 0;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+      opacity: 0;
+      transform: none;
+      transition: none;
+    }
+
+    .notification-icon {
+      width: 32px;
+      height: 32px;
+      flex: 0 0 auto;
+      background: transparent center / contain no-repeat;
+    }
+
+    .notification-icon.empty {
+      display: none;
+    }
+
+    .notification-text {
+      min-width: 0;
+    }
+
+    .notification.active {
+      opacity: 1;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="tracker" aria-label="Mega Man Xtreme Randomizer Tracker">
+    <img class="base" src="assets/tracker_base.png" alt="">
+
+    <img class="piece" data-piece="silhouette" src="assets/armor_silhouette.png" alt="" style="left:184px;top:38px;width:152px;height:191px">
+    <img class="piece hidden" data-piece="head" src="assets/armor_head.png" alt="" style="left:239px;top:50px;width:48px;height:38px">
+    <img class="piece hidden" data-piece="body_top" src="assets/armor_body_top.png" alt="" style="left:215px;top:84px;width:96px;height:32px">
+    <img class="piece hidden" data-piece="body_belt" src="assets/armor_body_belt.png" alt="" style="left:249px;top:122px;width:28px;height:24px">
+    <img class="piece hidden" data-piece="arm_left" src="assets/armor_arm_left.png" alt="" style="left:201px;top:112px;width:36px;height:42px">
+    <img class="piece hidden" data-piece="arm_right" src="assets/armor_arm_right.png" alt="" style="left:285px;top:114px;width:30px;height:44px">
+    <img class="piece hidden" data-piece="boots" src="assets/armor_boots.png" alt="" style="left:205px;top:152px;width:116px;height:68px">
+
+    <div class="notification" data-notification>
+      <span class="notification-icon empty" data-notification-icon></span>
+      <span class="notification-text" data-notification-text></span>
+    </div>
+  </main>
+
+  <script src="state.js"></script>
+  <script>
+    const armorBits = {
+      head: 0x01,
+      arms: 0x02,
+      body: 0x04,
+      boots: 0x08,
+    };
+
+    const bossSlots = [
+      { bit: 0x01, x: 23, y: 46, w: 66, h: 49 },//chill pinguin
+      { bit: 0x02, x: 23, y: 95, w: 66, h: 49 },//spark mandril
+      { bit: 0x04, x: 95, y: 143, w: 67, h: 49 },//armored armadillo
+      { bit: 0x08, x: 23, y: 143, w: 66, h: 49 },//storm eagle
+      { bit: 0x10, x: 95, y: 190, w: 66, h: 49 },//morph moth
+      { bit: 0x20, x: 95, y: 46, w: 66, h: 49 },//Wheel gator
+      { bit: 0x40, x: 94, y: 95, w: 68, h: 49 },//magna centipide
+      { bit: 0x80, x: 23, y: 190, w: 66, h: 50 },//flame stag
+    ];
+
+    const weaponSlots = [
+      { key: "shotgun_ice", x: 81, y: 301, w: 32, h: 32 },
+      { key: "electric_spark", x: 129, y: 301, w: 32, h: 32 },
+      { key: "rolling_shield", x: 33, y: 349, w: 32, h: 32 },
+      { key: "silk_shot", x: 33, y: 397, w: 32, h: 32 },
+      { key: "storm_tornado", x: 81, y: 349, w: 32, h: 32 },
+      { key: "speed_burner", x: 129, y: 349, w: 32, h: 32 },
+      { key: "magnet_mine", x: 81, y: 397, w: 32, h: 32 },
+      { key: "spin_wheel", x: 129, y: 397, w: 32, h: 32 },
+    ];
+
+    const subTankSlots = [
+      { index: 0, x: 266, y: 310, w: 34, h: 30 },
+      { index: 1, x: 314, y: 310, w: 34, h: 30 },
+      { index: 2, x: 362, y: 310, w: 34, h: 30  },
+      { index: 3, x: 410, y: 310, w: 34, h: 30  },
+    ];
+
+    const heartSlots = [
+      { index: 0, x: 244, y: 360, w: 24, h: 23 },
+      { index: 1, x: 271, y: 360, w: 24, h: 23 },
+      { index: 2, x: 298, y: 360, w: 24, h: 23 },
+      { index: 3, x: 325, y: 360, w: 24, h: 23 },
+      { index: 4, x: 352, y: 360, w: 24, h: 23 },
+      { index: 5, x: 379, y: 360, w: 24, h: 23 },
+      { index: 6, x: 406, y: 360, w: 24, h: 23 },
+      { index: 7, x: 433, y: 360, w: 24, h: 23 },
+    ];
+
+    const heartOffSlots = [
+      { index: 0, x: 244, y: 360, w: 26, h: 24 },
+      { index: 1, x: 272, y: 360, w: 26, h: 24 },
+      { index: 2, x: 300, y: 360, w: 26, h: 24 },
+      { index: 3, x: 328, y: 360, w: 26, h: 24 },
+      { index: 4, x: 356, y: 360, w: 26, h: 24 },
+      { index: 5, x: 384, y: 360, w: 26, h: 24 },
+      { index: 6, x: 412, y: 360, w: 26, h: 24 },
+      { index: 7, x: 440, y: 360, w: 26, h: 24 },
+    ];
+
+    const sigmaSlots = [
+      { bit: 0x01, x: 249, y: 390, w: 90, h: 52 },
+      { bit: 0x02, x: 351, y: 390, w: 90, h: 52 },
+    ];
+
+    const sigmaOffSlots = [
+      { bit: 0x01, x: 243, y: 387, w: 99, h: 58 },
+      { bit: 0x02, x: 345, y: 387, w: 99, h: 58 },
+    ];
+
+    const zeroSkillSlots = [
+      { bit: 0x01, x: 265, y: 465, w: 30, h: 30 },
+      { bit: 0x02, x: 313, y: 465, w: 30, h: 30 },
+      { bit: 0x04, x: 373, y: 465, w: 30, h: 30 },
+      { bit: 0x08, x: 421, y: 465, w: 30, h: 30 },
+    ];
+
+    const shotokanSlot = { x: 443, y: 203, w: 34, h: 30 };
+    const shotokanOffSlot = { x: 442, y: 203, w: 36, h: 32 };
+
+    const tracker = document.querySelector(".tracker");
+    const notification = document.querySelector("[data-notification]");
+    const notificationIcon = document.querySelector("[data-notification-icon]");
+    const notificationText = document.querySelector("[data-notification-text]");
+    const dimNodes = [];
+    const zeroDimNodes = [];
+    const subTankOffNodes = [];
+    const heartOffNodes = [];
+    const sigmaOffNodes = [];
+    const shotokanOffNodes = [];
+    const NOTIFICATION_MS = 1200;
+    const NOTIFICATION_GAP_MS = 0;
+    const NOTIFICATION_PREVIEW = false;
+    const NOTIFICATION_PREVIEW_TEXT = "Heart Tank";
+    const NOTIFICATION_PREVIEW_ICON = "assets/heart.png";
+    let currentNotificationSession = null;
+    let seenNotificationIds = new Set();
+    let notificationQueue = [];
+    let notificationActive = false;
+
+    const notificationIcons = {
+      "Heart Tank": "assets/heart.png",
+      "Sub Tank 1": "assets/tank.png",
+      "Sub Tank 2": "assets/tank.png",
+      "Sub Tank 3": "assets/tank.png",
+      "Sub Tank 4": "assets/tank.png",
+      "Head Part": "assets/helmet.png",
+      "Body Part": "assets/body.png",
+      "Arm Part": "assets/buster.png",
+      "Foot Part": "assets/boots.png",
+      "Shotgun Ice": "assets/shotgunice.png",
+      "Electric Spark": "assets/electric spark.png",
+      "Rolling Shield": "assets/rolling shield.png",
+      "Storm Tornado": "assets/tornado.png",
+      "Speed Burner": "assets/speed burner.png",
+      "Silk Shot": "assets/silk shot.png",
+      "Magnet Mine": "assets/magnet mine.png",
+      "Spin Wheel": "assets/spin wheel.png",
+      "Chill P Data": "assets/chill penguin data.png",
+      "Spark M Data": "assets/spark mandrill data.png",
+      "Armored A Data": "assets/armored armadillo data.png",
+      "Storm E Data": "assets/storm eagle data.png",
+      "Morph M Data": "assets/morph moth data.png",
+      "Wheel G Data": "assets/wheel gator.png",
+      "Magna C Data": "assets/magna centipide.png",
+      "Flame S Data": "assets/flame stag.png",
+      "Sigma Key 1": "assets/sigma.png",
+      "Sigma Key 2": "assets/sigma.png",
+      "Zero Skill 1": "assets/zero1.png",
+      "Zero Skill 2": "assets/zero2.png",
+      "Zero Skill 3": "assets/zero3.png",
+      "Zero Skill 4": "assets/zero4.png",
+      "Shotokan": "assets/street f.png",
+    };
+
+    function addDim(slot, group, index, collection = dimNodes, extraClass = "") {
+      const node = document.createElement("div");
+      node.className = `dim ${extraClass} hidden`.trim();
+      node.dataset.group = group;
+      node.dataset.index = String(index);
+      node.style.left = `${slot.x}px`;
+      node.style.top = `${slot.y}px`;
+      node.style.width = `${slot.w}px`;
+      node.style.height = `${slot.h}px`;
+      tracker.append(node);
+      collection.push(node);
+    }
+
+    [...bossSlots, ...weaponSlots, ...subTankSlots, ...heartSlots, ...sigmaSlots, shotokanSlot]
+      .forEach((slot, index) => addDim(slot, "slot", index));
+    zeroSkillSlots.forEach((slot, index) => addDim(slot, "zero", index, zeroDimNodes, "zero-dim"));
+
+    subTankSlots.forEach((slot) => addOffImage(slot, "assets/subtank_off.png", subTankOffNodes));
+    heartOffSlots.forEach((slot) => addOffImage(slot, "assets/heart_off.png", heartOffNodes));
+    sigmaOffSlots.forEach((slot) => addOffImage(slot, "assets/sigma_off.png", sigmaOffNodes));
+    addOffImage(shotokanOffSlot, "assets/street off.png", shotokanOffNodes);
+
+    subTankOffNodes.forEach((node) => node.classList.remove("hidden"));
+    heartOffNodes.forEach((node) => node.classList.remove("hidden"));
+    sigmaOffNodes.forEach((node) => node.classList.remove("hidden"));
+    shotokanOffNodes.forEach((node) => node.classList.remove("hidden"));
+
+    subTankSlots.forEach((slot, index) => updateDim(bossSlots.length + weaponSlots.length + index, true));
+    heartSlots.forEach((slot, index) => updateDim(bossSlots.length + weaponSlots.length + subTankSlots.length + index, true));
+    sigmaSlots.forEach((slot, index) => updateDim(bossSlots.length + weaponSlots.length + subTankSlots.length + heartSlots.length + index, true));
+
+    function addOffImage(slot, src, collection) {
+      const node = document.createElement("img");
+      node.className = "off-item hidden";
+      node.src = src;
+      node.alt = "";
+      node.style.left = `${slot.x}px`;
+      node.style.top = `${slot.y}px`;
+      node.style.width = `${slot.w}px`;
+      node.style.height = `${slot.h}px`;
+      tracker.append(node);
+      collection.push(node);
+    }
+
+    function setVisible(selector, visible) {
+      document.querySelectorAll(selector).forEach((node) => {
+        node.classList.toggle("hidden", !visible);
+      });
+    }
+
+    function hasBit(value, bit) {
+      return ((Number(value) || 0) & bit) !== 0;
+    }
+
+    function updateDim(index, hidden) {
+      dimNodes[index].classList.toggle("hidden", hidden);
+    }
+
+    function updateOff(collection, index, obtained) {
+      collection[index].classList.toggle("hidden", obtained);
+    }
+
+    function updateZeroDim(index, obtained) {
+      zeroDimNodes[index].classList.toggle("hidden", obtained);
+    }
+
+    function enqueueNotifications(events, sessionId) {
+      if (!Array.isArray(events)) return;
+
+      if (currentNotificationSession !== sessionId) {
+        currentNotificationSession = sessionId;
+        seenNotificationIds = new Set();
+        notificationQueue = [];
+      }
+
+      events
+        .sort((a, b) => Number(a.id) - Number(b.id))
+        .forEach((event) => {
+          const id = Number(event.id);
+          const label = String(event.label || "");
+          if (!Number.isFinite(id) || seenNotificationIds.has(id) || !label) return;
+          seenNotificationIds.add(id);
+          notificationQueue.push(label);
+        });
+
+      playNextNotification();
+    }
+
+    function playNextNotification() {
+      if (notificationActive || notificationQueue.length === 0) return;
+
+      notificationActive = true;
+      const message = notificationQueue.shift();
+      const icon = notificationIcons[message] || "";
+      notificationText.textContent = `${message}`;
+      notificationIcon.style.backgroundImage = icon ? `url("${icon}")` : "";
+      notificationIcon.classList.toggle("empty", !icon);
+      notification.classList.add("active");
+
+      window.setTimeout(() => {
+        notification.classList.remove("active");
+        window.setTimeout(() => {
+          notificationActive = false;
+          playNextNotification();
+        }, NOTIFICATION_GAP_MS);
+      }, NOTIFICATION_MS);
+    }
+
+    function render(state) {
+      const armor = Number(state.armor) || 0;
+      setVisible('[data-piece="head"]', hasBit(armor, armorBits.head));
+      setVisible('[data-piece="body_top"], [data-piece="body_belt"]', hasBit(armor, armorBits.body));
+      setVisible('[data-piece="arm_left"], [data-piece="arm_right"]', hasBit(armor, armorBits.arms));
+      setVisible('[data-piece="boots"]', hasBit(armor, armorBits.boots));
+
+      let offset = 0;
+      bossSlots.forEach((slot, index) => updateDim(offset + index, hasBit(state.bossKeys, slot.bit)));
+      offset += bossSlots.length;
+      weaponSlots.forEach((slot, index) => updateDim(offset + index, Boolean(state.weapons?.[slot.key])));
+      offset += weaponSlots.length;
+      subTankSlots.forEach((slot, index) => {
+        updateDim(offset + index, true);
+        updateOff(subTankOffNodes, index, Boolean(state.subTanks?.[slot.index]));
+      });
+      offset += subTankSlots.length;
+      heartSlots.forEach((slot, index) => {
+        updateDim(offset + index, true);
+        updateOff(heartOffNodes, index, Boolean(state.hearts?.[slot.index]));
+      });
+      offset += heartSlots.length;
+      sigmaSlots.forEach((slot, index) => {
+        updateDim(offset + index, true);
+        updateOff(sigmaOffNodes, index, hasBit(state.sigmaKeys, slot.bit));
+      });
+      offset += sigmaSlots.length;
+      zeroSkillSlots.forEach((slot, index) => updateZeroDim(index, hasBit(state.zeroSkills, slot.bit)));
+      updateDim(offset, true);
+      updateOff(shotokanOffNodes, 0, Boolean(state.shotokan));
+
+      enqueueNotifications(state.notifications, Number(state.sessionId) || 0);
+    }
+
+    let stateLoadInProgress = false;
+    function loadState() {
+      if (stateLoadInProgress) return;
+      stateLoadInProgress = true;
+      const script = document.createElement("script");
+      script.src = `state.js?t=${Date.now()}`;
+      script.onload = () => {
+        render(window.MXT_STATE || {});
+        script.remove();
+        stateLoadInProgress = false;
+      };
+      script.onerror = () => { script.remove(); stateLoadInProgress = false; };
+      document.head.append(script);
+    }
+
+    render(window.MXT_STATE || {});
+    if (NOTIFICATION_PREVIEW) {
+      notificationText.textContent = `${NOTIFICATION_PREVIEW_TEXT}`;
+      notificationIcon.style.backgroundImage = NOTIFICATION_PREVIEW_ICON ? `url("${NOTIFICATION_PREVIEW_ICON}")` : "";
+      notificationIcon.classList.toggle("empty", !NOTIFICATION_PREVIEW_ICON);
+      notification.classList.add("active");
+    }
+    setInterval(loadState, 150);
+  </script>
+</body>
+</html>
