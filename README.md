@@ -40,17 +40,26 @@ weakness. Some assignments may match vanilla by chance.
 
 Normal and charged weakness damage is selected per boss and seed between
 **4 and 7**, inclusive. Charged damage is never lower than normal damage.
-Boss HP and Buster damage remain unchanged. Original weapon-specific reactions
-are transferred to the new weakness where they exist.
+Boss HP and Buster damage remain unchanged.
+
+For Chill Penguin, Spark Mandrill, Morph Moth, Magna Centipede and Flame Stag,
+the special reaction is assigned independently to one **normal or charged attack
+of a different weapon**. Only that selected variant activates it. The reaction
+attack deals 1 damage per accepted hit, even if it was previously immune; the
+damage weakness still deals 4–7 but no longer activates the special reaction.
 
 Armored Armadillo uses the same weakness before and after losing his armor.
-The assigned weapon triggers his original armor-break sequence. Sigma's earlier
-forms, body/claws and vulnerability windows retain their original behavior.
+Armor break remains linked to his damage weakness: Armadillo is excluded from
+independent reactions to preserve this structural transition. Eagle, Gator and
+Sigma keep their generic damage responses. Sigma's earlier forms, body/claws
+and vulnerability windows retain their original behavior.
 
 Progression logic requires each assigned weakness, except for one designated
 Buster starter selected by seed. That exception does not bypass boss keys.
-Sigma's assigned weapon is also required by logic. The spoiler identifies all
-weaknesses, damage values and the Buster starter.
+Sigma's assigned weapon is also required by logic. Independent reaction attacks
+are optional tools, not extra progression requirements. Charged reactions need
+the Buster upgrade. The spoiler identifies damage weaknesses, their damage,
+reaction weapons and charge variants, and the Buster starter.
 
 When disabled, boss weaknesses and damage stay vanilla. Regenerating a supported
 ROM that previously used this option restores its original combat tables.

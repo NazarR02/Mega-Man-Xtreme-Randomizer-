@@ -43,17 +43,26 @@ Por azar, algunas debilidades pueden coincidir con las originales.
 
 El daño normal y cargado se determina por jefe y seed entre **4 y 7**, incluidos
 ambos extremos. El cargado nunca hace menos daño que el normal. No cambia la
-vida de los jefes ni el daño del Buster. La nueva debilidad activa la reacción
-específica original del jefe cuando existe.
+vida de los jefes ni el daño del Buster.
+
+En Chill Penguin, Spark Mandrill, Morph Moth, Magna Centipede y Flame Stag, la
+reacción especial se asigna por separado a un **ataque normal o cargado de otra
+arma**. Solo la variante seleccionada activa el efecto. Ese ataque hace 1 punto
+de daño por impacto aceptado, aunque antes fuera inmune; la debilidad de daño
+sigue haciendo 4–7, pero ya no activa la reacción especial.
 
 Armored Armadillo comparte una debilidad antes y después de perder la armadura.
-El arma asignada activa su secuencia original de rotura. Las formas anteriores,
-el cuerpo, las garras y las ventanas de vulnerabilidad de Sigma no cambian.
+La rotura sigue vinculada a su debilidad de daño: Armadillo queda excluido de
+las reacciones independientes para preservar esa transición. Eagle, Gator y
+Sigma conservan sus respuestas genéricas. Las formas anteriores, el cuerpo,
+las garras y las ventanas de vulnerabilidad de Sigma no cambian.
 
 La lógica exige el arma débil asignada, salvo un jefe de inicio elegido por
 seed que puede considerarse vencible con Buster. Esa excepción no evita sus
-llaves. También exige el arma asignada a Sigma. El spoiler indica debilidades,
-daños y cuál es el jefe de inicio con Buster.
+llaves. También exige el arma asignada a Sigma. Los ataques de reacción son
+herramientas opcionales, no requisitos extra de progresión. Las reacciones con
+carga necesitan la mejora del Buster. El spoiler indica debilidades de daño,
+daños, armas y variantes de reacción, y el jefe de inicio con Buster.
 
 Desactivado, las debilidades y daños quedan vanilla. Al regenerar una ROM
 compatible que tenía esta opción activa, se restauran sus tablas originales.
