@@ -10,8 +10,7 @@
 - `source/`: fuentes de ensamblador y sus pequeños recursos gráficos.
 
 Los dos BPS de la raíz se aplican a la misma ROM limpia compatible de 1 MiB.
-El generador comprueba su CRC antes de aplicarlos. No elimines los recursos
-compilados: el navegador los carga directamente y no necesita herramientas de
+El generador comprueba su CRC antes de aplicarlos: el navegador los carga directamente y no necesita herramientas de
 ensamblado para funcionar.
 
 Las tablas de recompensas, equipo inicial, debilidades, daños y paletas se
@@ -19,6 +18,3 @@ escriben por seed desde JavaScript; no están fijadas en los BPS base. El BPS
 descargado por el usuario sí incluye la configuración de su seed y requiere
 exactamente el archivo que seleccionó como entrada.
 
-La revisión del submenú es MXTK 16. Preserva el diálogo original de Dr. Light,
-restaura subtanques al cerrar la vista de llaves y admite actualizar versiones
-anteriores compatibles sin perder los datos de seed.
