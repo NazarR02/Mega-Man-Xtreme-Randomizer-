@@ -1,5 +1,16 @@
 # Changelog / Historial
 
+## 1.2.2 — 2026-11-01
+
+- Boss reward screens now name the actual rewards granted by each Maverick.
+  Supports one or two rewards and an empty-reward message, using native text.
+  The original weapon illustration remains unchanged.
+- Works with pickup text enabled or disabled; updates both ROM bank aliases
+  and regenerates labels when rerolling an existing seed ROM.
+- Las pantallas de jefes muestran los nombres de sus recompensas reales.
+  Admiten una o dos recompensas y un mensaje si no hay ninguna. Se conserva
+  la ilustración original del arma. Funciona con o sin textos al recoger objetos.
+
 ## 1.2.1 — 2026-10-31
 
 ### English

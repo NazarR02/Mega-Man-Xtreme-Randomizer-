@@ -1,6 +1,6 @@
 import { createDomeWeapon, getLocationRequirements } from './dome-weakness.js?v=1';
 import { validateProgression } from "./logic.js?v=release-1.2.1";
-import { compressStartingRewards } from "./rom.js?v=release-1.2.1";
+import { compressStartingRewards } from "./rom.js?v=release-1.2.2";
 import { createBossWeaknesses, COMBAT_BOSSES, COMBAT_WEAPONS } from './boss-weakness.js?v=3';
 import {
   ALL_BOSS_KEYS_REWARD,

@@ -2,7 +2,7 @@
 
 [English](README.md) | **Español**
 
-Versión **1.2.1** · [Cambios](CHANGELOG.md)
+Versión **1.2.2** · [Cambios](CHANGELOG.md)
 
 Randomizer para **Mega Man Xtreme de Game Boy Color**, ejecutado en el navegador.
 Mezcla ubicaciones, recompensas y debilidades para crear una ruta de progresión
@@ -103,6 +103,15 @@ Descarga un TXT junto a la ROM generada. Incluye opciones, equipo inicial,
 recompensas y esferas de progresión; si corresponde, también debilidades y daños.
 Desactívalo si no quieres descargar esa información. Esta casilla no cambia el
 resultado de la randomización.
+
+## Pantalla de recompensas de jefes — siempre activa
+
+La pantalla posterior a cada Maverick muestra las recompensas reales asignadas
+por la seed. Si hay una, aparece debajo de **YOU GOT**; si hay dos, se muestra
+una por línea. Si no hay recompensa, muestra **STAGE CLEAR / NO NEW REWARD**.
+Funciona independientemente de los textos opcionales al recoger objetos.
+La ilustración del arma y sus iniciales originales se conservan; los nombres
+escritos indican lo que realmente se recibió.
 
 ## Cúpulas de Chill Penguin — siempre randomizadas
 

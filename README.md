@@ -2,7 +2,7 @@
 
 **English** | [Español](README.es.md)
 
-Version **1.2.1** · [Changes](CHANGELOG.md)
+Version **1.2.2** · [Changes](CHANGELOG.md)
 
 A browser-based randomizer for **Mega Man Xtreme on Game Boy Color**. Mix item
 locations, boss rewards and weaknesses to create a reproducible progression route.
@@ -98,6 +98,15 @@ Downloads a TXT alongside the generated ROM. It lists options, Starting Gear,
 rewards and progression spheres, plus randomized weaknesses and their damage
 when enabled. Disable it to avoid downloading that information. This checkbox
 does not change the randomized result.
+
+## Boss reward screen — always enabled
+
+The screen after each Maverick displays the actual rewards assigned to that
+boss by the seed. One reward appears below **YOU GOT**; two rewards use one
+line each. A boss with no reward displays **STAGE CLEAR / NO NEW REWARD**.
+This works independently of the optional item pickup text setting. The weapon
+illustration and its original initials remain unchanged; the written names
+identify what was actually received.
 
 ## Chill Penguin domes — always randomized
 

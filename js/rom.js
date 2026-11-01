@@ -1,4 +1,5 @@
 import { createDomeWeapon, patchDomeWeakness } from './dome-weakness.js?v=1';
+import { patchBossRewardText } from './boss-reward-text.js?v=1';
 import { applyBpsPatch, crc32, formatCrc, inspectBpsPatch } from "./bps.js?v=release-1.2.1";
 import { hasKeyMenu, refreshKeyMenu, configureItemTexts, hasItemTexts } from './key-menu.js?v=release-1.2.1';
 import { createBossWeaknesses, patchBossWeaknesses } from './boss-weakness.js?v=3';
@@ -115,6 +116,7 @@ export function patchRom(sourceRom, stageTables, paletteValues, startingRewards 
     patchDomeWeakness(patchedRom, domeWeapon, previousDome);
   }
   const rewardPatch = writeRewardTables(patchedRom, stageTables);
+  const bossRewardTexts = hasBasePatchSignatures(sourceRom) ? patchBossRewardText(patchedRom, stageTables) : null;
   const palettePatch = writePalette(patchedRom, paletteValues);
   const weaponPalettePatches = writeWeaponPalettes(patchedRom, resolvedWeaponPalettes);
   const startingPatch = writeStartingTable(patchedRom, startingRewards);
@@ -125,7 +127,7 @@ export function patchRom(sourceRom, stageTables, paletteValues, startingRewards 
   refreshKeyMenu(patchedRom);
   const globalChecksum = fixGlobalChecksum(patchedRom);
 
-  return { rom: patchedRom, rewardPatch, palettePatch, weaponPalettePatches, startingPatch, metadataPatch, globalChecksum, bossWeaknesses, domeWeapon };
+  return { rom: patchedRom, rewardPatch, palettePatch, weaponPalettePatches, startingPatch, metadataPatch, globalChecksum, bossWeaknesses, domeWeapon, bossRewardTexts };
 }
 
 export function readPalette(rom) {

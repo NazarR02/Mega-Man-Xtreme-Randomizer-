@@ -4,10 +4,10 @@ import {
 } from "./palette.js?v=full-progression-1";
 import { createBpsPatch } from "./bps.js?v=release-1.2.1";
 import { drawArmoredCharacterPreview, drawCharacterPreview } from "./preview.js?v=palette-update-5";
-import { patchRom, prepareRom, readPalette, readRomFile, readSeedMetadata, readWeaponPalettes } from "./rom.js?v=release-1.2.1";
+import { patchRom, prepareRom, readPalette, readRomFile, readSeedMetadata, readWeaponPalettes } from "./rom.js?v=release-1.2.2";
 import {
   createRandomizerSettings, createRandomizerSettingsFromRomMetadata, createSpoilerLog, generateRandomizationFromSettings, parseRandomizationSeed,
-} from "./randomizer.js?v=release-1.2.1";
+} from "./randomizer.js?v=release-1.2.2";
 import { getStartingGearGroups, WEAPON_PALETTES } from "./tables.js?v=full-progression-1";
 import { getLocale, setLocale, t, translateDocument } from "./i18n.js?v=release-1.2.1";
 
