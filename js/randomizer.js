@@ -1,6 +1,7 @@
-import { validateProgression } from "./logic.js?v=boss-weakness-1";
-import { compressStartingRewards } from "./rom.js?v=boss-weakness-3";
-import { createBossWeaknesses, COMBAT_BOSSES, COMBAT_WEAPONS } from './boss-weakness.js?v=2';
+import { createDomeWeapon, getLocationRequirements } from './dome-weakness.js?v=1';
+import { validateProgression } from "./logic.js?v=release-1.2.1";
+import { compressStartingRewards } from "./rom.js?v=release-1.2.1";
+import { createBossWeaknesses, COMBAT_BOSSES, COMBAT_WEAPONS } from './boss-weakness.js?v=3';
 import {
   ALL_BOSS_KEYS_REWARD,
   BOSS_WEAPONS,
@@ -114,6 +115,7 @@ export function generateRandomizationFromSettings(settings) {
   validateCustomStartingCapacity(normalizedSettings);
   const bossWeaknesses = normalizedSettings.options.randomizeBossWeaknesses
     ? createBossWeaknesses(normalizedSettings.baseSeed) : null;
+  const domeWeapon = createDomeWeapon(normalizedSettings.baseSeed);
   let lastValidation = null;
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
@@ -131,6 +133,7 @@ export function generateRandomizationFromSettings(settings) {
       const planRng = createRng(`${normalizedSettings.baseSeed}:${attempt}:plan:${repair}`);
       const plan = buildPlan(normalizedSettings.options, planRng, startingRewards, normalizedSettings.baseSeed);
       plan.bossWeaknesses = bossWeaknesses;
+      plan.domeWeapon = domeWeapon;
       const validation = validateProgression(plan, normalizedSettings.options, startingRewards);
       lastValidation = validation;
 
@@ -210,6 +213,7 @@ export function createSpoilerLog(result) {
     `Require Full Progression: ${formatBool(result.options.requireFullProgression)}`,
     `Show Item Texts: ${formatBool(result.options.showItemTexts)}`,
     `Randomize Boss Weaknesses: ${formatBool(result.options.randomizeBossWeaknesses)}`,
+    "Penguin Dome Weakness: always randomized",
     `Starting Gear: ${formatStartingMode(result.startingGear.mode)}`,
     "",
     "Starting Gear",
@@ -230,16 +234,22 @@ export function createSpoilerLog(result) {
     );
   }
 
+  lines.push('', 'Chill Penguin Domes', '-------------------',
+    `Required weapon: ${COMBAT_WEAPONS[result.domeWeapon ?? 7].name} (normal or charged; 4 damage).`,
+    'Logic requires this weapon to collect Chill Penguin - Heart Tank, regardless of the reward placed there.');
   if (result.bossWeaknesses) {
     lines.push('', 'Boss Weaknesses', '---------------');
     for (const boss of COMBAT_BOSSES) {
       const weapon = COMBAT_WEAPONS[result.bossWeaknesses.mavericks[boss.id]];
       const damage = result.bossWeaknesses.damage[boss.id];
       lines.push(`${boss.name}: ${weapon.name} (${damage.normal} normal / ${damage.charged} charged)${boss.id === result.bossWeaknesses.busterBossId ? ' — Buster starter' : ''}`);
+      const reaction = result.bossWeaknesses.reactions[boss.id];
+      if (reaction) lines.push(`  Special reaction: ${COMBAT_WEAPONS[reaction.weapon].name} (${reaction.attack}; 1 damage)`);
+      else if (boss.id === 2) lines.push('  Armor break: assigned weakness, normal or charged (kept linked).');
     }
     const sigmaDamage = result.bossWeaknesses.damage[8];
     lines.push(`Sigma (final head): ${COMBAT_WEAPONS[result.bossWeaknesses.sigma].name} (${sigmaDamage.normal} normal / ${sigmaDamage.charged} charged)`);
-    lines.push('Logic requires assigned weaknesses except the designated Buster starter. Armadillo uses one weakness for both armor states.');
+    lines.push('Logic requires damage weaknesses except the designated Buster starter. Independent reactions are optional tools, not extra progression requirements. Armadillo keeps armor break linked to its weakness.');
   }
   lines.push(
     "",
@@ -308,7 +318,9 @@ function buildSettings({
 function buildPlan(options, rng, startingRewards, baseSeed) {
   const locationRewards = new Map();
   const bossRewards = new Map();
-  const allLocations = getAllLocations();
+  const domeWeapon = createDomeWeapon(baseSeed);
+  const allLocations = getAllLocations().map(location => ({ ...location,
+    requirements: getLocationRequirements(location, { domeWeapon }) }));
   const itemLocations = allLocations.filter((location) => location.group === "item");
   const armorLocations = allLocations.filter((location) => location.group === "armor");
   const itemPoolExtras = options.randomizeItems && shouldIncludeExtraItemRewards(baseSeed)

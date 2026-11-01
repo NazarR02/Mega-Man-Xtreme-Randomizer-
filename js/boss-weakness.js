@@ -1,4 +1,6 @@
-// Combat patch v2. Weapon values are reward IDs; attack IDs are a separate namespace.
+// Combat patch v3. Weapon values are reward IDs; attack IDs are a separate namespace.
+// Armadillo is deliberately linked: armor break is a structural fight transition.
+export const INDEPENDENT_REACTION_BOSSES = Object.freeze([0, 1, 4, 6, 7]);
 export const COMBAT_WEAPONS = Object.freeze([
   { value: 0, name: 'Shotgun Ice', normal: 0x0d, charged: 0x15 },
   { value: 1, name: 'Electric Spark', normal: 0x0c, charged: 0x14 },
@@ -46,8 +48,8 @@ const REACTIONS = [
 ];
 const fromHex = hex => Uint8Array.from(hex.match(/../g), b => parseInt(b, 16));
 
-export function createBossWeaknesses(baseSeed, version = 2) {
-  if (![1, 2].includes(version)) throw new Error('Unsupported combat version.');
+export function createBossWeaknesses(baseSeed, version = 3) {
+  if (![1, 2, 3].includes(version)) throw new Error('Unsupported combat version.');
   if (!/^[0-9a-f]{16}$/i.test(baseSeed)) throw new Error('Invalid combat seed.');
   let state = 2166136261;
   for (const c of `${baseSeed.toLowerCase()}:boss-weaknesses:v1`) state = Math.imul(state ^ c.charCodeAt(0), 16777619) >>> 0;
@@ -61,28 +63,43 @@ export function createBossWeaknesses(baseSeed, version = 2) {
     const j = random(i + 1); [mavericks[i], mavericks[j]] = [mavericks[j], mavericks[i]];
   }
   const plan = { version, mavericks, sigma: random(8), busterBossId: random(8) };
-  if (version === 2) {
+  if (version >= 2) {
     // Draw damage after the old assignment draws, preserving weaknesses/routes.
     plan.damage = Array.from({ length: 9 }, () => {
       const normal = 4 + random(4);
       return { normal, charged: normal + random(8 - normal) };
     });
   }
+  if (version === 3) {
+    plan.reactions = Array(8).fill(null);
+    for (const boss of INDEPENDENT_REACTION_BOSSES) {
+      const alternatives = COMBAT_WEAPONS.filter(w => w.value !== mavericks[boss]);
+      plan.reactions[boss] = { weapon: alternatives[random(alternatives.length)].value,
+        attack: random(2) === 0 ? 'normal' : 'charged' };
+    }
+  }
   return plan;
 }
 
 function validatePlan(plan) {
   if (plan === null) return;
-  if (![1, 2].includes(plan?.version) || !Array.isArray(plan.mavericks) || plan.mavericks.length !== 8 ||
+  if (![1, 2, 3].includes(plan?.version) || !Array.isArray(plan.mavericks) || plan.mavericks.length !== 8 ||
       new Set(plan.mavericks).size !== 8 || !plan.mavericks.every(v => Number.isInteger(v) && v >= 0 && v < 8) ||
       !Number.isInteger(plan.sigma) || plan.sigma < 0 || plan.sigma > 7 ||
       !Number.isInteger(plan.busterBossId) || plan.busterBossId < 0 || plan.busterBossId > 7) {
     throw new Error('Invalid boss weakness plan.');
   }
-  if (plan.version === 2 && (!Array.isArray(plan.damage) || plan.damage.length !== 9 ||
+  if (plan.version >= 2 && (!Array.isArray(plan.damage) || plan.damage.length !== 9 ||
       !plan.damage.every(d => Number.isInteger(d?.normal) && Number.isInteger(d?.charged) &&
         d.normal >= 4 && d.normal <= 7 && d.charged >= d.normal && d.charged <= 7))) {
     throw new Error('Invalid weakness damage: expected 4..7.');
+  }
+  if (plan.version === 3 && (!Array.isArray(plan.reactions) || plan.reactions.length !== 8 ||
+      !plan.reactions.every((r, boss) => INDEPENDENT_REACTION_BOSSES.includes(boss)
+        ? Number.isInteger(r?.weapon) && r.weapon >= 0 && r.weapon < 8 &&
+          r.weapon !== plan.mavericks[boss] && ['normal', 'charged'].includes(r.attack)
+        : r === null))) {
+    throw new Error('Invalid independent reaction plan.');
   }
 }
 
@@ -109,6 +126,12 @@ function regions(plan) {
       }
       data[weapon.normal] = damage.normal; data[weapon.charged] = damage.charged;
       if (weapon.value === 4) data[0x1a] = damage.normal;
+      const reaction = boss && plan.version === 3 ? plan.reactions[boss.id] : null;
+      if (reaction) {
+        // Reaction recognition runs only after an accepted hit. An old immunity
+        // must not swallow this attack. It deals 1 damage, not weakness damage.
+        data[COMBAT_WEAPONS[reaction.weapon][reaction.attack]] = 1;
+      }
     }
     return { offset, data, profile };
   });
@@ -116,7 +139,13 @@ function regions(plan) {
     const data = fromHex(hex);
     if (plan) {
       const w = COMBAT_WEAPONS[plan.mavericks[boss]];
-      for (const [index, kind] of operands) data[index] = kind === 'fragment' ? (w.value === 4 ? 0x1a : w.normal) : w[kind];
+      const reaction = plan.version === 3 ? plan.reactions[boss] : null;
+      for (const [index, kind] of operands) {
+        // Reuse all comparisons for the one exact selected attack. The sibling
+        // charge, old weakness and Silk fragments must not trigger it as well.
+        data[index] = reaction ? COMBAT_WEAPONS[reaction.weapon][reaction.attack]
+          : kind === 'fragment' ? (w.value === 4 ? 0x1a : w.normal) : w[kind];
+      }
     }
     result.push({ offset, data });
   }

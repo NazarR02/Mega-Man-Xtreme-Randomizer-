@@ -2,6 +2,8 @@
 
 **English** | [Español](README.es.md)
 
+Version **1.2.1** · [Changes](CHANGELOG.md)
+
 A browser-based randomizer for **Mega Man Xtreme on Game Boy Color**. Mix item
 locations, boss rewards and weaknesses to create a reproducible progression route.
 You supply your own compatible game copy; no ROMs or emulators are included.
@@ -97,6 +99,20 @@ rewards and progression spheres, plus randomized weaknesses and their damage
 when enabled. Disable it to avoid downloading that information. This checkbox
 does not change the randomized result.
 
+## Chill Penguin domes — always randomized
+
+Every seed chooses one of the eight boss weapons to destroy the domes. This is
+always enabled, with no checkbox, independently of boss weakness randomization.
+The original Speed Burner can also be selected. Both normal and charged attacks
+of the selected weapon deal 4 damage; domes retain 10 HP (three accepted hits).
+
+The solver requires the selected weapon to collect the **Chill Penguin Heart
+Tank location**, including any other reward shuffled there. It rejects routes
+that lock needed progression behind the missing weapon. Charged attacks are
+optional, so the Buster upgrade is not required for this gate. The spoiler
+lists the selected weapon; the full MXT2 seed reproduces it. Speed Burner gates
+in Wheel Gator and Magna Centipede retain their existing requirements.
+
 ## Starting Gear
 
 | Mode | Behavior |
@@ -139,6 +155,8 @@ existing seed replaces the current settings with its saved configuration.
 patch for that result; it must be applied to the exact file selected as input.
 If your input was already randomized, the downloaded BPS requires that input,
 not a clean ROM. Required base patches are applied automatically by the app.
+Only the supported clean ROM and current-release generated ROMs are accepted;
+experimental test revisions cannot be upgraded.
 
 In game, **Select** opens pause, **Start** shows boss/Sigma keys, and **B**
 returns to the weapon menu. Subtanks are hidden only while viewing the keys.
@@ -175,7 +193,8 @@ opening `index.html` directly with `file://`, which can block patch loading.
 
 ### GitHub Pages
 
-Upload the project folder's **contents**, preserving `js`, `css`, `patches` and
+Upload the project folder's **contents**, preserving `js`, `css` and
 `bizhawk`. In repository settings, configure Pages to serve the chosen branch's
-root folder. Keep `.nojekyll`, both root BPS files and the compiled patch assets.
+root folder. Keep `.nojekyll` and both root BPS files. The `patches/` folder
+contains optional documentation and native sources; it can be omitted.
 Extract the distribution ZIP before uploading its files manually to GitHub.

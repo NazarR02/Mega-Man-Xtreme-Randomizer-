@@ -2,6 +2,8 @@
 
 [English](README.md) | **Español**
 
+Versión **1.2.1** · [Cambios](CHANGELOG.md)
+
 Randomizer para **Mega Man Xtreme de Game Boy Color**, ejecutado en el navegador.
 Mezcla ubicaciones, recompensas y debilidades para crear una ruta de progresión
 reproducible. Debes aportar tu copia compatible del juego; no se incluyen ROMs
@@ -102,6 +104,21 @@ recompensas y esferas de progresión; si corresponde, también debilidades y da�
 Desactívalo si no quieres descargar esa información. Esta casilla no cambia el
 resultado de la randomización.
 
+## Cúpulas de Chill Penguin — siempre randomizadas
+
+Cada seed elige una de las ocho armas de jefe para destruir las cúpulas. Esto
+siempre está activo, sin casilla, independientemente de las debilidades de los
+jefes. También puede salir la original, Speed Burner. El ataque normal y el
+cargado del arma elegida hacen 4 de daño; las cúpulas conservan 10 HP (tres
+impactos aceptados).
+
+La lógica exige esa arma para recoger la **ubicación del Heart Tank de Chill
+Penguin**, incluida cualquier otra recompensa colocada allí. Rechaza rutas que
+bloqueen la progresión necesaria detrás del arma que falta. El ataque cargado
+es opcional: esta ubicación no exige la mejora del Buster. El spoiler indica el
+arma y el código MXT2 completo la reproduce. Los requisitos de Speed Burner en
+Wheel Gator y Magna Centipede se mantienen.
+
 ## Equipo inicial
 
 | Modo | Comportamiento |
@@ -146,7 +163,8 @@ seed existente sustituye los ajustes actuales por su configuración guardada.
 parche de ese resultado; debe aplicarse exactamente al archivo elegido como
 entrada. Si cargaste una ROM ya randomizada, el BPS descargado necesita esa
 misma ROM, no una copia limpia. La aplicación aplica automáticamente los parches
-base necesarios.
+base necesarios. Solo se admiten la ROM limpia compatible y las ROMs generadas
+por el release actual; las revisiones experimentales de prueba no se actualizan.
 
 Dentro del juego, **Select** abre la pausa, **Start** muestra las llaves de
 jefes y Sigma, y **B** vuelve al menú de armas. Los subtanques se ocultan solo
@@ -184,7 +202,7 @@ el resultado. No requiere dependencias de Node ni compilación. Evita abrir
 
 ### En GitHub Pages
 
-Sube **el contenido** de la carpeta del proyecto, conservando `js`, `css`,
-`patches` y `bizhawk`. Configura Pages en los ajustes del repositorio para servir
-la raíz de la rama elegida. Conserva `.nojekyll`, los dos BPS de la raíz y los
-recursos compilados. Extrae el ZIP antes de subir sus archivos manualmente.
+Sube **el contenido** de la carpeta del proyecto, conservando `js`, `css`
+y `bizhawk`. Configura Pages en los ajustes del repositorio para servir
+la raíz de la rama elegida. Conserva `.nojekyll` y los dos BPS de la raíz. La carpeta `patches/` contiene documentación y fuentes
+opcionales; puedes omitirla. Extrae el ZIP antes de subir los archivos manualmente.

@@ -1,3 +1,4 @@
+import { getLocationRequirements } from './dome-weakness.js?v=1';
 import {
   ARMOR_PARTS,
   BOSS_WEAPONS,
@@ -25,7 +26,7 @@ export function validateProgression(plan, options, startingRewards = []) {
     for (const stage of STAGES) {
       for (const location of stage.locations) {
         const locationKey = `${stage.id}:${location.id}`;
-        if (collectedLocations.has(locationKey) || !canCollectLocation(location, state)) continue;
+        if (collectedLocations.has(locationKey) || !canCollectLocation(location, state, plan)) continue;
 
         const rewards = plan.locationRewards.get(location.id) ?? [];
         if (hasRouteProgressionReward(rewards, state, options, plan, collectedLocations)) {
@@ -98,8 +99,8 @@ function createState() {
   };
 }
 
-function canCollectLocation(location, state) {
-  return location.requirements.every((requirement) => hasRequirement(requirement, state));
+function canCollectLocation(location, state, plan) {
+  return getLocationRequirements(location, plan).every((requirement) => hasRequirement(requirement, state));
 }
 
 function hasRequirement(requirement, state) {
@@ -178,7 +179,7 @@ function getBlockingRewards(plan, state, collectedLocations, defeatedBosses, opt
       if (collectedLocations.has(locationKey)) continue;
       if (!flexibleTargets.has(location.id)) continue;
 
-      for (const requirement of location.requirements) {
+      for (const requirement of getLocationRequirements(location, plan)) {
         if (hasRequirement(requirement, state)) continue;
         const reward = requirementToReward(requirement);
         if (reward) candidates.set(rewardKey(reward), reward);
@@ -261,7 +262,7 @@ function unlocksProgressionLocation(requirementKind, requirementValue, state, op
     for (const location of stage.locations) {
       const locationKey = `${stage.id}:${location.id}`;
       if (collectedLocations.has(locationKey)) continue;
-      if (!location.requirements.some((requirement) =>
+      if (!getLocationRequirements(location, plan).some((requirement) =>
         requirement.kind === requirementKind && requirement.value === requirementValue
       )) {
         continue;

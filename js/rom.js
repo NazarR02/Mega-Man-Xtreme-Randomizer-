@@ -1,6 +1,7 @@
-import { applyBpsPatch, crc32, formatCrc, inspectBpsPatch } from "./bps.js?v=key-menu-16";
-import { canUpgradeKeyMenu, hasKeyMenu, refreshKeyMenu, upgradeKeyMenu, configureItemTexts, hasItemTexts } from './key-menu.js?v=key-menu-16';
-import { createBossWeaknesses, patchBossWeaknesses } from './boss-weakness.js?v=2';
+import { createDomeWeapon, patchDomeWeakness } from './dome-weakness.js?v=1';
+import { applyBpsPatch, crc32, formatCrc, inspectBpsPatch } from "./bps.js?v=release-1.2.1";
+import { hasKeyMenu, refreshKeyMenu, configureItemTexts, hasItemTexts } from './key-menu.js?v=release-1.2.1';
+import { createBossWeaknesses, patchBossWeaknesses } from './boss-weakness.js?v=3';
 import {
   ARMOR_PARTS,
   BANK_SIZE,
@@ -27,8 +28,8 @@ import {
   isValidBossKeyValue,
 } from "./tables.js?v=full-progression-1";
 
-const BASE_PATCH_URL = new URL("../randomizer patch v1.2.bps?v=key-menu-16", import.meta.url);
-const ITEM_TEXT_PATCH_URL = new URL("../randomizer patch v1.2 - item texts.bps?v=key-menu-16", import.meta.url);
+const BASE_PATCH_URL = new URL("../randomizer patch v1.2.bps?v=release-1.2.1", import.meta.url);
+const ITEM_TEXT_PATCH_URL = new URL("../randomizer patch v1.2 - item texts.bps?v=release-1.2.1", import.meta.url);
 const BASE_PATCH_VERSION = "randomizer patch v1.2 + key menu";
 const ROM_SEED_METADATA_SIGNATURE = Object.freeze([0x4d, 0x58, 0x54, 0x53]); // MXTS
 const ROM_SEED_METADATA_VERSION = 1;
@@ -70,14 +71,6 @@ export async function prepareRom(sourceRom, { showItemTexts = false } = {}) {
     return preparationResult(configured, patchInfo, inputCrc, "already-patched-modified", changed);
   }
 
-  if (signaturesPresent && canUpgradeKeyMenu(sourceRom)) {
-    const upgraded = await upgradeKeyMenu(sourceRom);
-    configureItemTexts(upgraded,Boolean(showItemTexts));
-    refreshKeyMenu(upgraded);
-    fixGlobalChecksum(upgraded);
-    return preparationResult(upgraded, patchInfo, inputCrc, 'legacy-upgraded', true);
-  }
-
   if (sourceRom.length !== patchInfo.sourceSize) {
     throw new Error(
       `Incompatible file: expected ${patchInfo.sourceSize} bytes, got ${sourceRom.length}.`,
@@ -114,6 +107,13 @@ export function patchRom(sourceRom, stageTables, paletteValues, startingRewards 
   if (seedMetadata && (bossWeaknesses || previousCombat || hasBasePatchSignatures(sourceRom))) {
     patchBossWeaknesses(patchedRom, bossWeaknesses, previousCombat);
   }
+  const domeWeapon = seedMetadata
+    ? createDomeWeapon(seedMetadata.baseSeed) : 7;
+  if (seedMetadata && hasBasePatchSignatures(sourceRom)) {
+    const previousDome = previousMetadata?.domeVersion === 1
+      ? createDomeWeapon(previousMetadata.baseSeed) : 7;
+    patchDomeWeakness(patchedRom, domeWeapon, previousDome);
+  }
   const rewardPatch = writeRewardTables(patchedRom, stageTables);
   const palettePatch = writePalette(patchedRom, paletteValues);
   const weaponPalettePatches = writeWeaponPalettes(patchedRom, resolvedWeaponPalettes);
@@ -125,7 +125,7 @@ export function patchRom(sourceRom, stageTables, paletteValues, startingRewards 
   refreshKeyMenu(patchedRom);
   const globalChecksum = fixGlobalChecksum(patchedRom);
 
-  return { rom: patchedRom, rewardPatch, palettePatch, weaponPalettePatches, startingPatch, metadataPatch, globalChecksum, bossWeaknesses };
+  return { rom: patchedRom, rewardPatch, palettePatch, weaponPalettePatches, startingPatch, metadataPatch, globalChecksum, bossWeaknesses, domeWeapon };
 }
 
 export function readPalette(rom) {
@@ -146,7 +146,7 @@ export function readSeedMetadata(rom) {
   const offset = bankAddressToOffset(ROM_SEED_METADATA_BANK, ROM_SEED_METADATA_ADDRESS);
   if (!rom || offset + ROM_SEED_METADATA_SIZE > rom.length) return null;
   if (!ROM_SEED_METADATA_SIGNATURE.every((value, index) => rom[offset + index] === value)) return null;
-  if (![ROM_SEED_METADATA_VERSION, 2].includes(rom[offset + 4])) return null;
+  if (![ROM_SEED_METADATA_VERSION, 2, 3, 4].includes(rom[offset + 4])) return null;
 
   const optionFlags = rom[offset + 5] & 0x7f;
   const mode = STARTING_MODE_NAMES[rom[offset + 6]] ?? "normal";
@@ -160,7 +160,8 @@ export function readSeedMetadata(rom) {
   return {
     baseSeed,
     optionFlags,
-    combatVersion: rom[offset + 4] === 2 ? 2 : 1,
+    combatVersion: rom[offset + 4] >= 4 ? 3 : rom[offset + 4],
+    domeVersion: rom[offset + 4] >= 4 ? 1 : 0,
     palettePresetKey,
     startingGear: {
       mode,
@@ -291,6 +292,10 @@ function writeStartingTable(rom, startingRewards) {
     );
   }
 
+  // The base patch's CALL targets $7D91, inside the final inventory slot.
+  // Move its two register saves and far-call stub beyond the reserved table.
+  // This also repairs seeds whose table write erased those saves.
+  if (hasBasePatchSignatures(rom)) relocateStartingDispatcher(rom);
   const offset = bankAddressToOffset(STARTING_TABLE_BANK, STARTING_TABLE_ADDRESS);
   ensureRomHasRange(rom, offset, STARTING_TABLE_SIZE);
   const bytes = [compressedRewards.length & 0xff];
@@ -307,6 +312,22 @@ function writeStartingTable(rom, startingRewards) {
     entryCount: compressedRewards.length,
     rewards: compressedRewards,
   };
+}
+
+function relocateStartingDispatcher(rom) {
+  const call = bankAddressToOffset(STARTING_TABLE_BANK, 0x7d74);
+  const oldStub = bankAddressToOffset(STARTING_TABLE_BANK, 0x7d91);
+  const newStub = bankAddressToOffset(STARTING_TABLE_BANK, 0x7d93);
+  const body = [0x3e,0x3f,0x21,0x17,0x7b,0xc7,0xe1,0xc1,0xc9];
+  const matches = (offset, bytes) => bytes.every((b, i) => rom[offset + i] === b);
+  const relocated = [0xc5,0xe5,...body];
+  if (matches(call, [0xcd,0x93,0x7d]) && matches(newStub, relocated)) return;
+  if (!matches(call, [0xcd,0x91,0x7d]) || !matches(oldStub + 2, body) ||
+      !matches(oldStub + 11, [0,0])) {
+    throw new Error('Unsupported Starting Gear dispatch code.');
+  }
+  rom.set(relocated, newStub);
+  rom.set([0xcd,0x93,0x7d], call);
 }
 
 function validateRewardTables(stageTables) {
@@ -401,7 +422,7 @@ function writeSeedMetadata(rom, metadata, rewardPatch) {
   }
 
   ROM_SEED_METADATA_SIGNATURE.forEach((value, index) => { rom[offset + index] = value; });
-  rom[offset + 4] = metadata.options?.randomizeBossWeaknesses ? 2 : ROM_SEED_METADATA_VERSION;
+  rom[offset + 4] = 4; // Combat v3 plus mandatory per-seed dome vulnerability.
   rom[offset + 5] = packOptionFlags(metadata.options);
   rom[offset + 6] = STARTING_MODE_CODES[metadata.startingGear?.mode] ?? STARTING_MODE_CODES.normal;
   rom[offset + 7] = packArmorMask(metadata.startingGear);

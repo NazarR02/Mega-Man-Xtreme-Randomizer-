@@ -2,14 +2,14 @@ import {
   findPresetKeyByValues, formatPaletteValue, getPreset,
   getPresetOptions, getPreviewColors, normalizePaletteValues,
 } from "./palette.js?v=full-progression-1";
-import { createBpsPatch } from "./bps.js?v=key-menu-16";
+import { createBpsPatch } from "./bps.js?v=release-1.2.1";
 import { drawArmoredCharacterPreview, drawCharacterPreview } from "./preview.js?v=palette-update-5";
-import { patchRom, prepareRom, readPalette, readRomFile, readSeedMetadata, readWeaponPalettes } from "./rom.js?v=boss-weakness-3";
+import { patchRom, prepareRom, readPalette, readRomFile, readSeedMetadata, readWeaponPalettes } from "./rom.js?v=release-1.2.1";
 import {
   createRandomizerSettings, createRandomizerSettingsFromRomMetadata, createSpoilerLog, generateRandomizationFromSettings, parseRandomizationSeed,
-} from "./randomizer.js?v=boss-weakness-3";
+} from "./randomizer.js?v=release-1.2.1";
 import { getStartingGearGroups, WEAPON_PALETTES } from "./tables.js?v=full-progression-1";
-import { getLocale, setLocale, t, translateDocument } from "./i18n.js?v=boss-weakness-2";
+import { getLocale, setLocale, t, translateDocument } from "./i18n.js?v=release-1.2.1";
 
 const elements = {
   disclaimerOverlay: document.querySelector("#disclaimerOverlay"), acceptDisclaimerButton: document.querySelector("#acceptDisclaimerButton"),
@@ -250,7 +250,7 @@ async function handleRomSelected(event) {
       if (seedMetadata) applyRomSeedMetadata(seedMetadata);
       else { elements.palettePreset.value = findPresetKeyByValues(state.paletteValues); renderActivePalette(); }
     }
-    state.romPreparationKey = preparation.status === 'legacy-upgraded' ? 'keyMenuUpgraded' : preparation.appliedBasePatch ? "cleanRomPatched" : "patchDetected";
+    state.romPreparationKey = preparation.appliedBasePatch ? "cleanRomPatched" : "patchDetected";
     state.romStatusKey = preparation.appliedBasePatch ? "romPrepared" : "romCompatible";
     refreshStatusTexts();
     if (!elements.messageBox.classList.contains("error")) clearMessage();
